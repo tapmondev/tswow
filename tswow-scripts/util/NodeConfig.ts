@@ -339,6 +339,56 @@ export class NodeConfigClass extends ModernConfigFile {
                     ]
                 },
                 {
+                    name: "MacOS",
+                    description: "Configuration options for macOS support",
+                    properties: [
+                        {
+                            name: "MacOS.WinePath",
+                            description: "Path to Wine or CrossOver executable for running WoW on macOS",
+                            examples: [
+                                ["/usr/local/bin/wine", "Standard Wine installation"],
+                                ["/Applications/CrossOver.app/Contents/MacOS/wine", "CrossOver installation"]
+                            ],
+                            defaultValue: "/usr/local/bin/wine"
+                        },
+                        {
+                            name: "MacOS.WineDllOverrides",
+                            description: "Wine DLL overrides for Direct3D compatibility",
+                            examples: [
+                                ["d3d9=n,b", "Disable native d3d9 and use builtin"]
+                            ],
+                            defaultValue: "d3d9=n,b"
+                        },
+                        {
+                            name: "MacOS.EnableMetalHUD",
+                            description: "Enable Metal HUD for debugging graphics (MTL_HUD_ENABLED)",
+                            examples: [
+                                [true, "Enable Metal HUD"],
+                                [false, "Disable Metal HUD"]
+                            ],
+                            defaultValue: false
+                        },
+                        {
+                            name: "MacOS.SynchronousQueueSubmits",
+                            description: "Enable synchronous queue submits for Metal (MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS)",
+                            examples: [
+                                [true, "Enable synchronous queue submits"],
+                                [false, "Disable synchronous queue submits"]
+                            ],
+                            defaultValue: true
+                        },
+                        {
+                            name: "MacOS.DXVKAsync",
+                            description: "Enable DXVK async for better performance (DXVK_ASYNC)",
+                            examples: [
+                                [true, "Enable DXVK async"],
+                                [false, "Disable DXVK async"]
+                            ],
+                            defaultValue: true
+                        }
+                    ]
+                },
+                {
                     name: "Misc",
                     properties: [
                         {
@@ -458,6 +508,26 @@ export class NodeConfigClass extends ModernConfigFile {
 
     get WritePosToClipboard(): boolean {
         return this.getValue<boolean>("Positions.WriteToClipboard");
+    }
+
+    get MacOSWinePath(): string {
+        return this.getValue<string>("MacOS.WinePath");
+    }
+
+    get MacOSWineDllOverrides(): string {
+        return this.getValue<string>("MacOS.WineDllOverrides");
+    }
+
+    get MacOSEnableMetalHUD(): boolean {
+        return this.getValue<boolean>("MacOS.EnableMetalHUD");
+    }
+
+    get MacOSSynchronousQueueSubmits(): boolean {
+        return this.getValue<boolean>("MacOS.SynchronousQueueSubmits");
+    }
+
+    get MacOSDXVKAsync(): boolean {
+        return this.getValue<boolean>("MacOS.DXVKAsync");
     }
 
     // Database methods

@@ -20,7 +20,7 @@ inline int sol_lua_push(lua_State* L, const type_in& value) {\
     }\
     else\
     {\
-        amount = sol::stack::push(L, sol::nil);\
+        amount = sol::stack::push(L, sol::lua_nil);\
     }\
     return amount;\
 }\
@@ -28,7 +28,7 @@ template <typename Handler>\
 bool sol_lua_check(sol::types<type_in>, lua_State* L, int index, Handler&& handler, sol::stack::record& tracking) {\
     int absolute_index = lua_absindex(L, index);\
     sol::type v = sol::type_of(L, absolute_index);\
-    if (v == sol::type::nil)\
+    if (v == sol::type::lua_nil)\
     {\
         return true;\
     }\
@@ -50,7 +50,7 @@ inline type_in& sol_lua_get(sol::types<type_in> types, lua_State* L, int index, 
 {\
     int absolute_index = lua_absindex(L, index);\
     sol::type v = sol::type_of(L, absolute_index);\
-    if (v == sol::type::nil)\
+    if (v == sol::type::lua_nil)\
     {\
         tracking.use(1);\
         void* c = add_lua_garbage(sizeof(type_in));\

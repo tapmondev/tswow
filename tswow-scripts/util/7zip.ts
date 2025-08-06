@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-import { isWindows } from './Platform';
+import { isWindows, isMacOS } from './Platform';
 import { wsys } from './System';
 import { term } from './Terminal';
 
@@ -23,6 +23,9 @@ export namespace SevenZip {
         term.debug('misc', `Extracting ${archive} to ${out}`)
         if(isWindows()) {
             wsys.exec(`"${sevenZipPath}" e -o${out} ${archive}`);
+        } else if (isMacOS()) {
+            // MacOs uses 7zz if installed via brew.
+            wsys.execIn(out,`7zz x "${archive}"`,'inherit')
         } else {
             wsys.execIn(out,`7z x "${archive}"`,'inherit')
         }

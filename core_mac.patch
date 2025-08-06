@@ -1,0 +1,52 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 4f22642b94..fd820eb7f9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -48,6 +48,7 @@ FetchContent_Declare(
+ )
+ FetchContent_MakeAvailable (sol2)
+ target_compile_definitions(sol2 INTERFACE SOL_NO_CHECK_NUMBER_PRECISION)
++target_compile_definitions(sol2 INTERFACE SOL_USE_OPTIONAL=0)
+ 
+ #
+ # sourcemap
+diff --git a/cmake/compiler/clang/settings.cmake b/cmake/compiler/clang/settings.cmake
+index eec7bf581a..76b5557286 100644
+--- a/cmake/compiler/clang/settings.cmake
++++ b/cmake/compiler/clang/settings.cmake
+@@ -149,7 +149,9 @@ if(BUILD_SHARED_LIBS)
+ 
+   # --no-undefined to throw errors when there are undefined symbols
+   # (caused through missing TRINITY_*_API macros).
+-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --no-undefined")
++  if (NOT APPLE)
++    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --no-undefined")
++  endif()
+ 
+   message(STATUS "Clang: Disallow undefined symbols")
+ endif()
+diff --git a/cmake/macros/FindMySQL.cmake b/cmake/macros/FindMySQL.cmake
+index 0123f86a9d..bc49774099 100644
+--- a/cmake/macros/FindMySQL.cmake
++++ b/cmake/macros/FindMySQL.cmake
+@@ -167,7 +167,9 @@ if(UNIX)
+   foreach(LIB ${MYSQL_ADD_LIBRARIES})
+     find_library(MYSQL_LIBRARY
+       NAMES
+-        mysql libmysql ${LIB}
++        mysql libmysql mysqlclient ${LIB}
++      HINTS
++        ${_MYSQL_ROOT_HINTS}
+       PATHS
+         ${MYSQL_ADD_LIBRARIES_PATH}
+         /usr/lib
+@@ -175,6 +177,9 @@ if(UNIX)
+         /usr/local/lib
+         /usr/local/lib/mysql
+         /usr/local/mysql/lib
++      PATH_SUFFIXES
++        lib
++        lib/mysql
+       DOC "Specify the location of the mysql library here."
+     )
+   endforeach(LIB ${MYSQL_ADD_LIBRARY})

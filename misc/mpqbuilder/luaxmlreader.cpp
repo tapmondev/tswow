@@ -23,6 +23,15 @@
 #include <algorithm>
 #include <vector>
 #include <set>
+#include <cstring>
+#include <cerrno>
+
+// Add macOS-specific includes if needed
+#ifdef __APPLE__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 std::vector<std::string> special_files = {
 	  "interface\\glues\\charactercreate\\ui-charactercreate-classes.blp"
@@ -67,8 +76,19 @@ void handleFile(HANDLE hMpq, std::string const& file,std::string const& outputDi
 		auto f = file;
 		std::replace(f.begin(),f.end(),'\\','/');
 		fs::path outfile = outputDir / fs::path(f);
-		fs::create_directories(outfile.parent_path());
-		SFileExtractFile(hMpq,file.c_str(),outfile.string().c_str(),0);
+		
+		try {
+			fs::create_directories(outfile.parent_path());
+		} catch (const std::exception& e) {
+			std::cerr << "Failed to create directory " << outfile.parent_path() << ": " << e.what() << std::endl;
+			return;
+		}
+		
+		if (!SFileExtractFile(hMpq, file.c_str(), outfile.string().c_str(), 0)) {
+			std::cerr << "Failed to extract file " << file << " with error " << GetLastError() << std::endl;
+			return;
+		}
+		
 		++counter;
 	}
 }

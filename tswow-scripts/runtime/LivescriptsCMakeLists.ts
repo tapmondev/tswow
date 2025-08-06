@@ -1,13 +1,13 @@
 import { BuildType } from "../util/BuildType";
 import { ipaths } from "../util/Paths";
-import { isWindows } from "../util/Platform";
+import { isMacOS, isWindows } from "../util/Platform";
 
 export function getLivescriptCMakeLists(buildType: BuildType, buildModule: string) {
 return `cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-${!isWindows()?'set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")':''}
+${!isWindows() && !isMacOS()?'set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")':''}
 
 project(${buildModule})
 

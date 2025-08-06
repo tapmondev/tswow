@@ -37,6 +37,7 @@ export namespace MPQBuilder {
                 , () => {
                     wsys.exec(
                         `${cmake} "${relativeMpqSource}"`
+                        + ` -DBOOST_ROOT="${bpaths.boost.boost_1_82_0.abs().get()}"`
                         ,  'inherit');
                     wsys.exec(`make`,'inherit');
                 });

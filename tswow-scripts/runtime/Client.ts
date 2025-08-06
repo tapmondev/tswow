@@ -21,7 +21,7 @@ import { ClientPatches, EXTENSION_DLL_PATCH_NAME } from '../util/ClientPatches';
 import { mpath, wfs } from '../util/FileSystem';
 import { WDirectory, WNode } from '../util/FileTree';
 import { ClientPath, findLocaleDir, ipaths } from '../util/Paths';
-import { isWindows } from '../util/Platform';
+import { isWindows, isMacOS } from '../util/Platform';
 import { Process } from '../util/Process';
 import { term } from '../util/Terminal';
 import { StartCommand } from './CommandActions';
@@ -134,7 +134,105 @@ export class Client {
             let process = new Process('client').showOutput(false);
             if(isWindows()) {
                 process.start(this.path.wow_exe.get())
+            } else if(isMacOS()) {
+                try {
+                    // Use the configured Wine/CrossOver path for macOS
+                    const winePath = NodeConfig.MacOSWinePath;
+                    term.debug('client', `Using macOS Wine path: ${winePath}`);
+                    
+                    if(!winePath || winePath.trim() === '') {
+                        throw new Error('MacOS.WinePath is not configured in node.conf');
+                    }
+                    
+                    // Log the WoW executable path
+                    const wowExePath = this.path.wow_exe.get();
+                    term.debug('client', `WoW executable path: ${wowExePath}`);
+                    
+                    // Set up environment variables for Wine/CrossOver on macOS
+                    const env: {[key: string]: string} = {};
+                    
+                    // Wine DLL overrides for Direct3D compatibility
+                    env['WINEDLLOVERRIDES'] = NodeConfig.MacOSWineDllOverrides;
+                    term.debug('client', `Setting WINEDLLOVERRIDES=${env['WINEDLLOVERRIDES']}`);
+                    
+                    // Metal HUD for debugging graphics (optional)
+                    if (NodeConfig.MacOSEnableMetalHUD) {
+                        env['MTL_HUD_ENABLED'] = '1';
+                        term.debug('client', 'Enabling Metal HUD (MTL_HUD_ENABLED=1)');
+                    }
+                    
+                    // Synchronous queue submits for Metal
+                    if (NodeConfig.MacOSSynchronousQueueSubmits) {
+                        env['MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS'] = '1';
+                        term.debug('client', 'Enabling synchronous queue submits (MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS=1)');
+                    }
+                    
+                    // DXVK async for better performance
+                    if (NodeConfig.MacOSDXVKAsync) {
+                        env['DXVK_ASYNC'] = '1';
+                        term.debug('client', 'Enabling DXVK async (DXVK_ASYNC=1)');
+                    }
+                    
+                    // Since Process.start() doesn't support environment variables directly,
+                    // we'll use the env command to set them
+                    let envCommand = '/usr/bin/env';
+                    let envArgs: string[] = [];
+                    
+                    // Add all environment variables to the args array
+                    if (env['WINEDLLOVERRIDES']) {
+                        envArgs.push(`WINEDLLOVERRIDES=${env['WINEDLLOVERRIDES']}`);
+                    }
+                    if (env['MTL_HUD_ENABLED']) {
+                        envArgs.push('MTL_HUD_ENABLED=1');
+                    }
+                    if (env['MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS']) {
+                        envArgs.push('MVK_CONFIG_SYNCHRONOUS_QUEUE_SUBMITS=1');
+                    }
+                    if (env['DXVK_ASYNC']) {
+                        envArgs.push('DXVK_ASYNC=1');
+                    }
+                    
+                    // Add the Wine command and WoW executable path
+                    // Handle paths with spaces by properly escaping them
+                    // The env command will pass the arguments correctly to Wine
+                    
+                    // Helper function to properly escape paths with spaces for shell execution
+                    const escapePath = (path: string) => {
+                        // If the path contains spaces and isn't already quoted, quote it
+                        if (path.includes(' ') && !path.startsWith('"') && !path.endsWith('"')) {
+                            return `"${path}"`;
+                        }
+                        return path;
+                    };
+                    
+                    // Escape the Wine path and WoW executable path
+                    const escapedWinePath = escapePath(winePath);
+                    const escapedWowPath = escapePath(this.path.wow_exe.get());
+                    
+                    envArgs.push(escapedWinePath);
+                    envArgs.push(escapedWowPath);
+                    
+                    // Log the full command that will be executed
+                    const fullCommand = `${envCommand} ${envArgs.join(' ')}`;
+                    term.debug('client', `Executing command: ${fullCommand}`);
+                    
+                    // Log the specific Wine and WoW paths for debugging
+                    term.debug('client', `Wine path (escaped): ${escapedWinePath}`);
+                    term.debug('client', `WoW path (escaped): ${escapedWowPath}`);
+                    
+                    // Start the process with environment variables
+                    process.start(envCommand, envArgs);
+                    term.debug('client', 'Started WoW client with macOS-specific environment variables');
+                } catch(err) {
+                    term.error('client', `Failed to start WoW client on macOS: ${err.message}`);
+                    term.log('client', 'Please ensure Wine or CrossOver is installed and MacOS.WinePath is correctly configured in node.conf');
+                    term.log('client', 'If your Wine path contains spaces, make sure it is correctly configured in node.conf');
+                    term.debug('client', `Current Wine path: ${NodeConfig.MacOSWinePath}`);
+                    term.debug('client', `Current WoW path: ${this.path.wow_exe.get()}`);
+                    throw err;
+                }
             } else {
+                // Linux
                 process.start('wine',[this.path.wow_exe.get()])
             }
             processes.push(process);
