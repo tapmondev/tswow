@@ -20,6 +20,15 @@
 #include <string>
 #include <vector>
 #include <cstdio>
+#include <cstring>
+#include <cerrno>
+
+// Add macOS-specific includes if needed
+#ifdef __APPLE__
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
 
 inline bool exists(std::string const& name) {
     std::ifstream f(name.c_str());
@@ -30,10 +39,15 @@ bool clearFile(std::string const& file, const char* errorMsg)
 {
     if (exists(file))
     {
-        remove(file.c_str());
+        if (remove(file.c_str()) != 0)
+        {
+            std::cerr << errorMsg << file << ": " << strerror(errno) << "\n";
+            return false;
+        }
+        
         if (exists(file))
         {
-            std::cout << errorMsg << file << "\n";
+            std::cerr << errorMsg << file << "\n";
             return false;
         }
     }
@@ -131,8 +145,23 @@ int main(int argc, char **argv)
     std::string outputFile = argv[2];
     if (!clearFile(outputFile, "Failed to remove old mpq file "));
 
-    std::ifstream  src(temp.m_file, std::ios::binary);
-    std::ofstream  dst(outputFile, std::ios::binary);
+    std::ifstream src(temp.m_file, std::ios::binary);
+    if (!src.is_open()) {
+        std::cerr << "Failed to open source file: " << temp.m_file << "\n";
+        return -1;
+    }
+    
+    std::ofstream dst(outputFile, std::ios::binary);
+    if (!dst.is_open()) {
+        std::cerr << "Failed to open destination file: " << outputFile << "\n";
+        return -1;
+    }
+    
     dst << src.rdbuf();
+    
+    if (dst.fail()) {
+        std::cerr << "Failed to write to destination file: " << outputFile << "\n";
+        return -1;
+    }
     return 0;
 }

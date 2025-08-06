@@ -264,6 +264,22 @@ export namespace TrinityCore {
                 const relSource = bpaths.TrinityCore
                     .relativeFrom(spaths.cores.TrinityCore)
                 const installPrefix = bpaths.TrinityCore.join('install','trinitycore').abs().get();
+                
+                // Check if we're on macOS
+                const isMacOS = process.platform === 'darwin';
+                
+                // Get MySQL path from Homebrew on macOS
+                let mysqlRootDir = '';
+                if (isMacOS) {
+                    try {
+                        // Try to get MySQL path from Homebrew
+                        mysqlRootDir = wsys.exec('brew --prefix mysql-client', 'pipe').trim();
+                        term.log('build', `Found MySQL from Homebrew at: ${mysqlRootDir}`);
+                    } catch (error) {
+                        term.log('build', 'Failed to get MySQL path from Homebrew. Make sure mysql-client is installed.');
+                    }
+                }
+                
                 // TODO: Set up optimization flags for o0 as debug and o3 as release
                 setupCommand = `cmake ${relSource}`
                 +` -DCMAKE_INSTALL_PREFIX="${installPrefix}"`
@@ -275,6 +291,7 @@ export namespace TrinityCore {
                 +` -DTRACY_TIMER_FALLBACK="${!Args.hasFlag('tracy-timer-fallback',[process.argv,args1])?'ON':'OFF'}"`
                 +` -DWITH_WARNINGS=0`
                 +` -DSCRIPTS=${scripts}`
+                + (isMacOS && mysqlRootDir ? ` -DMYSQL_ROOT_DIR="${mysqlRootDir}"` : '')
                 + (process.env.CC ? ` -DCMAKE_C_COMPILER="${process.env.CC}"` : '')
                 + (process.env.CXX ? ` -DCMAKE_CXX_COMPILER="${process.env.CXX}"` : '');
                 buildCommand = 'make -j 4';

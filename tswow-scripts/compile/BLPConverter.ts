@@ -35,6 +35,7 @@ export namespace BLPConverter {
                 .relativeFrom(spaths.misc.blpconverter.get());
             await wsys.inDirectory(bpaths.blpconverter.get()
                 , () => {
+                    // Use the same cmake command for all Unix-like systems
                     wsys.exec(
                         `${cmake} "${relativeBlpConverterSource}"`
                         ,  'inherit');

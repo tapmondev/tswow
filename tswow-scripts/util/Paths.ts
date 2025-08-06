@@ -20,7 +20,7 @@ import path from 'path';
 import { mpath, wfs } from './FileSystem';
 import { custom, dir, dirn, dynCustom, dyndir, dynfile, enumDir, file, FilePath, generateTree, WDirectory, WFile } from "./FileTree";
 import { TestsDirectory } from "../test/TestsDirectory";
-import { isWindows } from './Platform';
+import { isWindows, isMacOS } from './Platform';
 
 export const TDB_URL = "https://github.com/TrinityCore/TrinityCore/releases/download/TDB335.24081/TDB_full_world_335.24081_2024_08_17.7z"
 
@@ -134,7 +134,9 @@ export function LivescriptsDirectory(inPath: string) {
                     library: custom((value)=>
                         isWindows()
                             ? new WFile(mpath(wfs.dirname(value),'lib',type,`${fullModName}.dll`))
-                            : new WFile(mpath(wfs.dirname(value),'lib',`lib${fullModName}.so`))
+                            : isMacOS()
+                                ? new WFile(mpath(wfs.dirname(value),'lib',`lib${fullModName}.dylib`))
+                                : new WFile(mpath(wfs.dirname(value),'lib',`lib${fullModName}.so`))
                     ),
                     pdb: custom((value)=>
                         new WFile(mpath(wfs.dirname(value),'lib',type,fullModName+'.pdb'))),
@@ -415,7 +417,9 @@ export function InstallPath(pathIn: string, tdb: string) {
                     scripts: dir({
                         moduleLib: dynfile((mod)=>isWindows()
                             ? `${wfs.dirname(mod)}/scripts_tswow_${wfs.basename(mod)}.dll`
-                            : `${wfs.dirname(mod)}/libscripts_tswow_${wfs.basename(mod)}.so`
+                            : isMacOS()
+                                ? `${wfs.dirname(mod)}/libscripts_tswow_${wfs.basename(mod)}.dylib`
+                                : `${wfs.dirname(mod)}/libscripts_tswow_${wfs.basename(mod)}.so`
                         ),
                         modulePdb: dynfile(mod=>`${wfs.dirname(mod)}/scripts_tswow_${wfs.basename(mod)}.pdb`)
                     }),
@@ -425,11 +429,19 @@ export function InstallPath(pathIn: string, tdb: string) {
                     vmap4assembler: file(`vmap4assembler${isWindows()?'.exe':''}`),
                     vmap4extractor: file(`vmap4extractor${isWindows()?'.exe':''}`),
                     authserver: file(`authserver${isWindows()?'.exe':''}`),
-                    tracy_client: file(`TracyClient.dll`),
+                    tracy_client: file(isWindows()
+                        ? `TracyClient.dll`
+                        : isMacOS()
+                            ? `libTracyClient.dylib`
+                            : `libTracyClient.so`),
                     authserver_conf_dist: file(`authserver.conf.dist`),
                     worldserver_conf_dist: file(`worldserver.conf.dist`),
 
-                    libcrypto: file('libcrypto-1_1-x64.dll'),
+                    libcrypto: file(isWindows()
+                        ? 'libcrypto-1_1-x64.dll'
+                        : isMacOS()
+                            ? 'libcrypto.dylib'
+                            : 'libcrypto.so'),
                     configs: custom((i)=>generateTree(i,dir({}))),
                 }))
             })),
@@ -542,10 +554,10 @@ export function BuildPaths(pathIn: string, tdb: string) {
                         mysqldump_exe: file('mysqldump.exe')
                     }),
                     lib: dir({
-                        libmysql_dll: file('libmysql.dll'),
-                        libmysqld_dll: file('libmysqld.dll'),
-                        mysqlserver_lib: file('mysqlserver.lib'),
-                        libmysql_lib: file('libmysql.lib')
+                        libmysql_dll: file(isWindows() ? 'libmysql.dll' : isMacOS() ? 'libmysql.dylib' : 'libmysql.so'),
+                        libmysqld_dll: file(isWindows() ? 'libmysqld.dll' : isMacOS() ? 'libmysqld.dylib' : 'libmysqld.so'),
+                        mysqlserver_lib: file(isWindows() ? 'mysqlserver.lib' : isMacOS() ? 'libmysqlserver.dylib' : 'libmysqlserver.so'),
+                        libmysql_lib: file(isWindows() ? 'libmysql.lib' : isMacOS() ? 'libmysql.dylib' : 'libmysql.so')
                     })
                 }))
             },
@@ -554,16 +566,20 @@ export function BuildPaths(pathIn: string, tdb: string) {
         opensslArchive: file('openssl1_1_1m.zip'),
 
         openssl: dir({
-            libcrypto_dll: file('libcrypto-1_1-x64.dll'),
+            libcrypto_dll: file(isWindows() ? 'libcrypto-1_1-x64.dll' : isMacOS() ? 'libcrypto.dylib' : 'libcrypto.so'),
             lib: dir({
-                libcrypto_lib: file('libcrypto.lib')
+                libcrypto_lib: file(isWindows() ? 'libcrypto.lib' : isMacOS() ? 'libcrypto.dylib' : 'libcrypto.so')
             })
         }),
 
         boost: dir({
             boost_1_82_0: dir({
                 lib64_msvc_14_3: dirn('lib64-msvc-14.3',{
-                    fslib: file('libboost_filesystem-vc143-mt-x64-1_81.lib')
+                    fslib: file(isWindows()
+                        ? 'libboost_filesystem-vc143-mt-x64-1_81.lib'
+                        : isMacOS()
+                            ? 'libboost_filesystem.dylib'
+                            : 'libboost_filesystem.so')
                 })
             })
         }),
@@ -591,7 +607,11 @@ export function BuildPaths(pathIn: string, tdb: string) {
             etc_linux: dirn('install/trinitycore/etc',{}),
             lib_linux: dirn('install/trinitycore/lib',{}),
             tracy_dll: custom((k)=>(type: string)=>{
-                return new WFile(mpath(k,`_deps/tracy-build/${type}/TracyClient.dll`))
+                return new WFile(mpath(k, isWindows()
+                    ? `_deps/tracy-build/${type}/TracyClient.dll`
+                    : isMacOS()
+                        ? `_deps/tracy-build/libTracyClient.dylib`
+                        : `_deps/tracy-build/${type}/libTracyClient.so`))
             }),
             tracy_source: dirn('_deps/tracy-src',{
                 tracy_header: file('Tracy.hpp'),
@@ -628,7 +648,16 @@ export function BuildPaths(pathIn: string, tdb: string) {
                     `_deps/tracy-build/${type}/TracyClient.lib`,
                     `_deps/tracy-build/${type}/TracyClient.pdb`,
                 ]
-                :
+                : isMacOS() ?
+                [
+                    `libliblua.a`,
+                    `_deps/tracy-build/libTracyClient.dylib`,
+                    `install/trinitycore/lib/libcommon.dylib`,
+                    `install/trinitycore/lib/libdatabase.dylib`,
+                    `install/trinitycore/lib/libgame.dylib`,
+                    `install/trinitycore/lib/libshared.dylib`,
+                    `install/trinitycore/lib/libTracyClient.dylib`,
+                ] :
                 [
                     `install/trinitycore/lib/libcommon.so`,
                     `install/trinitycore/lib/libdatabase.so`,
@@ -653,6 +682,14 @@ export function BuildPaths(pathIn: string, tdb: string) {
                 `dep/argon2/${type}/argon2.lib`
             ]
             :
+            isMacOS() ?
+            [
+                `libliblua.a`,
+                `install/trinitycore/lib/libcommon.dylib`,
+                `install/trinitycore/lib/libdatabase.dylib`,
+                `install/trinitycore/lib/libgame.dylib`,
+                `install/trinitycore/lib/libshared.dylib`,
+            ] :
             [
                 `install/trinitycore/lib/libcommon.so`,
                 `install/trinitycore/lib/libdatabase.so`,
@@ -679,7 +716,7 @@ export function BuildPaths(pathIn: string, tdb: string) {
 
         bzip2: dir({
             lib: dir({
-                bzip2_lib: file('bzip2.lib')
+                bzip2_lib: file(isWindows() ? 'bzip2.lib' : isMacOS() ? 'libbz2.dylib' : 'libbz2.so')
             })
         }),
     }))

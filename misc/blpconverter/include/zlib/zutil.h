@@ -135,10 +135,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  ifndef Z_SOLO
 #    if defined(__MWERKS__) && __dest_os != __be_os && __dest_os != __win32_os
 #      include <unix.h> /* for fdopen */
-#    else
-#      ifndef fdopen
-#        define fdopen(fd,mode) NULL /* No fdopen() */
-#      endif
 #    endif
 #  endif
 #endif
@@ -159,12 +155,14 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 18
 #endif
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(OS_CODE)
 #  define OS_CODE 19
 #endif
 
 #if defined(_BEOS_) || defined(RISCOS)
-#  define fdopen(fd,mode) NULL /* No fdopen() */
+#  ifndef fdopen
+#    define fdopen(fd,mode) NULL /* No fdopen() */
+#  endif
 #endif
 
 #if (defined(_MSC_VER) && (_MSC_VER > 600)) && !defined __INTERIX
