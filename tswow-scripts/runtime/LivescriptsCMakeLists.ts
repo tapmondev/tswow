@@ -12,7 +12,7 @@ ${!isWindows() && !isMacOS()?'set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined"
 project(${buildModule})
 
 # Core settings
-file (GLOB libs "${ipaths.bin.libraries.build.pick(buildType).abs('FORWARD')}/${(isWindows()?'*.lib':'*.so')}")
+file (GLOB libs "${ipaths.bin.libraries.build.pick(buildType).abs('FORWARD')}/${(isWindows()?'*.lib':(isMacOS()?'*.dylib':'*.so'))}")
 
 # borrowed by tswow from https://stackoverflow.com/a/46003179
 function (filter_items aItems aRegEx)
