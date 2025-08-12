@@ -163,6 +163,7 @@ void TSLua::load_events(sol::state& state)
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnCheckCast);
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnDispel);
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnCancel);
+    LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnFinished);
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnEffect);
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnEffectApplyGlyph);
     LUA_MAPPED_HANDLE(spell_events, SpellEvents, OnHit);

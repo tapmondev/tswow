@@ -8256,6 +8256,9 @@ declare namespace _hidden {
         OnCancel(callback: (spell: TSSpell, oldState: SpellState)=>void): T;
         OnCancel(id: EventID, callback: (spell: TSSpell, oldState: SpellState)=>void): T;
 
+        OnFinished(callback: (spell: TSSpell)=>void): T;
+        OnFinished(id: EventID, callback: (spell: TSSpell)=>void): T;
+
         OnEffect(callback: (spell: TSSpell, cancel: TSMutable<boolean,boolean>, info: TSSpellEffectInfo, mode: SpellEffectHandleMode, unitTarget: TSUnit | undefined, item: TSItem | undefined, obj: TSGameObject | undefined, corpse: TSCorpse | undefined)=>void);
         OnEffect(id: EventID, callback: (spell: TSSpell, cancel: TSMutable<boolean,boolean>, info: TSSpellEffectInfo, mode: SpellEffectHandleMode, unitTarget: TSUnit | undefined, item: TSItem | undefined, obj: TSGameObject | undefined, corpse: TSCorpse | undefined)=>void);
         /**

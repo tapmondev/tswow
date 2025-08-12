@@ -470,6 +470,7 @@ struct TSEvents
             , TSSpell
             , TSMutable<bool,bool> isLocked
         )
+        ID_EVENT(OnFinished, TSSpell)
         ID_EVENT(OnHit, TSSpell)
         ID_EVENT(OnTick, TSAuraEffect)
         ID_EVENT(OnRemove, TSAuraEffect, TSAuraApplication, TSNumber<uint32>)
