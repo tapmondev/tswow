@@ -28,6 +28,7 @@ import { StartCommand } from './CommandActions';
 import { Dataset } from './Dataset';
 import { Identifier } from './Identifiers';
 import { NodeConfig } from './NodeConfig';
+import * as path from "path";
 
 export const CLEAN_CLIENT_MD5 = '45892bdedd0ad70aed4ccd22d9fb5984'
 
@@ -196,19 +197,11 @@ export class Client {
                     // Handle paths with spaces by properly escaping them
                     // The env command will pass the arguments correctly to Wine
                     
-                    // Helper function to properly escape paths with spaces for shell execution
-                    const escapePath = (path: string) => {
-                        // If the path contains spaces and isn't already quoted, quote it
-                        if (path.includes(' ') && !path.startsWith('"') && !path.endsWith('"')) {
-                            return `"${path}"`;
-                        }
-                        return path;
-                    };
                     
                     // Escape the Wine path and WoW executable path
-                    const escapedWinePath = escapePath(winePath);
-                    const escapedWowPath = escapePath(this.path.wow_exe.get());
-                    
+                    const escapedWinePath = winePath;
+                    const escapedWowPath = this.path.wow_exe.get();
+
                     envArgs.push(escapedWinePath);
                     envArgs.push(escapedWowPath);
                     
@@ -220,8 +213,13 @@ export class Client {
                     term.debug('client', `Wine path (escaped): ${escapedWinePath}`);
                     term.debug('client', `WoW path (escaped): ${escapedWowPath}`);
                     
+
+                    // Extract the directory
+                    const wowCwd = path.dirname(wowExePath);
+
+
                     // Start the process with environment variables
-                    process.start(envCommand, envArgs);
+                    process.startIn(wowCwd,envCommand, envArgs);
                     term.debug('client', 'Started WoW client with macOS-specific environment variables');
                 } catch(err) {
                     term.error('client', `Failed to start WoW client on macOS: ${err.message}`);
@@ -314,8 +312,8 @@ export class Client {
             term.success('client',`Source wow client hash is ${hash}`);
         }
 
-        term.debug('client', `Writing ClientExtensions.dll`)
         if(this.dataset.config.client_patches.includes(EXTENSION_DLL_PATCH_NAME)) {
+            term.log('client', `Writing ClientExtensions.dll`)
             if(!ipaths.bin.ClientExtensions_dll.exists()) {
                 throw new Error(
                       `Dataset ${this.dataset.name}`
@@ -324,7 +322,7 @@ export class Client {
                     + ` dll at ${ipaths.bin.ClientExtensions_dll.get()}`
                 )
             }
-            wowbin = wowbin.slice(0,0x758c00)
+            wowbin = wowbin.subarray(0,0x758c00)
             ipaths.bin.ClientExtensions_dll
                 .copy(this.path.ClientExtensions_dll)
         }
@@ -334,14 +332,17 @@ export class Client {
         const usedPatches = (await this.exePatches())
             .filter(x=>usedPatchNames.includes(x.name));
         usedPatches.forEach(cat=>{
-            term.debug('client', `Applying client patch ${cat.name}`)
+            term.log('client', `Applying client patch ${cat.name}`)
             cat.patches.forEach(patch=>{
                 patch.values.forEach((value,offset)=>{
                     wowbin.writeUInt8(value,patch.address+offset);
                 })
             })
         })
-        term.debug('client', `Writing patched wow.exe`)
+        term.log('client', `Writing patched wow.exe`)
+
+        hash = md5(wowbin)
+        term.log('client', `New wow.exe hash is ${hash}`);
         this.path.wow_exe.writeBuffer(wowbin);
     }
 

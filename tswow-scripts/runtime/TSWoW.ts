@@ -86,7 +86,38 @@ async function initTerminal()
 
 export async function main() {
     term.log('mysql',`TSWoW Starting Up`)
-    term.debug('tswow', `Process arguments: ${process.argv.join(' ')}`)
+    term.debug('misc', `Process arguments: ${process.argv.join(' ')}`)
+
+    // Check for direct command execution BEFORE any initialization
+    const commandArgs = process.argv.slice(2).filter(arg => !arg.startsWith('--') && arg !== 'node' && !arg.endsWith('.js'));
+    if (commandArgs.length > 0) {
+        term.debug('misc', `Found command line arguments: ${commandArgs.join(' ')}`);
+        term.debug('misc', 'Executing command directly without full initialization');
+        
+        // Minimal initialization for command execution
+        process.argv.push('--ipaths=./')
+        const { commands } = await import("../util/Commands");
+        
+        // Initialize only the essential components needed for build commands
+        await import("./CommandActions");
+        const { Datascripts } = await import("./Datascripts");
+        const { Livescripts } = await import("./Livescripts");
+        const { Addon } = await import("./Addon");
+
+        // Initialize the command handlers
+        await Datascripts.initialize();
+        await Livescripts.initialize();
+        await Addon.initialize();
+
+        try {
+            await commands.sendCommand(commandArgs.join(' '));
+            term.debug('misc', 'Command executed successfully, exiting');
+            process.exit(0);
+        } catch (error) {
+            term.error('misc', `Failed to execute command: ${error}`);
+            process.exit(1);
+        }
+    }
 
     if(process.argv.includes('terminal-only'))
     {
@@ -173,24 +204,24 @@ export async function main() {
     }
     await Realm.initialize()
     await AuthServer.initializeServer()
-    term.log('tswow', 'AuthServer initialized');
+    term.log('misc', 'AuthServer initialized');
     if (process.argv.includes('realm-only'))
     {
         return initTerminal();
     }
-    term.log('tswow', 'Initializing Datascripts...');
+    term.log('misc', 'Initializing Datascripts...');
     await Datascripts.initialize();
-    term.debug('tswow', 'Datascripts.initialize() completed');
+    term.debug('misc', 'Datascripts.initialize() completed');
     if (process.argv.includes('data-only'))
     {
-        term.debug('tswow', 'data-only mode detected, calling initTerminal()');
+        term.debug('misc', 'data-only mode detected, calling initTerminal()');
         return initTerminal();
     }
-    term.debug('tswow', 'Datascripts initialized, now initializing Tests...');
+    term.debug('misc', 'Datascripts initialized, now initializing Tests...');
     await Tests.initialize();
-    term.debug('tswow', 'Tests initialized, now initializing Livescripts...');
+    term.debug('misc', 'Tests initialized, now initializing Livescripts...');
     await Livescripts.initialize();
-    term.debug('tswow', 'Livescripts initialized');
+    term.debug('misc', 'Livescripts initialized');
     if (process.argv.includes('scripts-only'))
     {
         return initTerminal();
@@ -207,11 +238,11 @@ export async function main() {
     await MiscCommands.initialize();
     await Launcher.initialize();
     Module.cacheEndpoints(false);
-    term.debug('tswow', 'All initializations complete, calling initTerminal()');
+    term.debug('misc', 'All initializations complete, calling initTerminal()');
     return initTerminal();
 }
 main().catch(err => {
-    term.error('tswow', `Fatal error in main(): ${err}`);
+    term.error('misc', `Fatal error in main(): ${err}`);
     console.error(err);
     process.exit(1);
 });
