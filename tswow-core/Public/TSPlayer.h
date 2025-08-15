@@ -190,6 +190,7 @@ public:
 	void SetArenaPoints(uint32 arenaP);
 	void SetHonorPoints(uint32 honorP);
 	void SetLifetimeKills(uint32 val);
+	void SendLoot(TSGUID guid, uint8 lootType);
 
   void SetMoney(uint32 amt);
 	TSNumber<uint32> GetMoney();

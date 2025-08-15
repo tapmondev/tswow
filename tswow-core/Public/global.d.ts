@@ -85,6 +85,22 @@ declare const enum InventorySlots /**@realType:uint32*/{
     BAG_3 = 21,
     BAG_4 = 22
 }
+declare const enum LootType /**@realType:uint8 */ {
+        LOOT_NONE                   = 0,
+
+        LOOT_CORPSE                 = 1,
+        LOOT_PICKPOCKETING          = 2,
+        LOOT_FISHING                = 3,
+        LOOT_DISENCHANTING          = 4,
+                                                                // ignored always by client
+        LOOT_SKINNING               = 6,
+        LOOT_PROSPECTING            = 7,
+        LOOT_MILLING                = 8,
+
+        LOOT_FISHINGHOLE            = 20,                       // unsupported by client, sending LOOT_FISHING instead
+        LOOT_INSIGNIA               = 21,                       // unsupported by client, sending LOOT_CORPSE instead
+        LOOT_FISHING_JUNK           = 22                        // unsupported by client, sending LOOT_FISHING instead
+}
 declare const enum SpellMissInfo {} /** SharedDefines.h:SpellMissInfo */
 declare const enum HighGuid { } /** ObjectGuid.h:HighGuid */
 declare const enum CorpseType {} /** Corpse.h:CorpseType */
@@ -101,7 +117,7 @@ declare const enum CurrentSpellTypes {} /** Unit.h:CurrentSpellTypes */
 declare const enum CharmType {} /** Unit.h:CharmType */
 declare const enum PlayerFlags {} /** Player.h:PlayerFlags */
 
-declare const enum Powers /**@realType:int8 */ {
+declare const enum Powers {
     HEALTH                        = -2,
     MANA                          = 0,
     RAGE                          = 1,
@@ -1449,6 +1465,31 @@ declare interface TSPlayer extends TSUnit, TSDBJsonProvider {
      * @param uint32 honorableKills
      */
     SetLifetimeKills(val : uint32) : void
+
+    /**
+     * Sends the [Player] loot, based on the gameobjects loot table
+     * enum LootType : uint8
+    {
+        LOOT_NONE                   = 0,
+
+        LOOT_CORPSE                 = 1,
+        LOOT_PICKPOCKETING          = 2,
+        LOOT_FISHING                = 3,
+        LOOT_DISENCHANTING          = 4,
+                                                                // ignored always by client
+        LOOT_SKINNING               = 6,
+        LOOT_PROSPECTING            = 7,
+        LOOT_MILLING                = 8,
+
+        LOOT_FISHINGHOLE            = 20,                       // unsupported by client, sending LOOT_FISHING instead
+        LOOT_INSIGNIA               = 21,                       // unsupported by client, sending LOOT_CORPSE instead
+        LOOT_FISHING_JUNK           = 22                        // unsupported by client, sending LOOT_FISHING instead
+    };
+    * @proto SendLoot(guid, lootType)
+    * @param uint64 guid: an item guid
+    * @param uint8 lootType: the loot type to send
+    */
+    SendLoot(guid : TSGUID, lootType : LootType) : void
 
     /**
      * Sets the [Player]s amount of money in copper

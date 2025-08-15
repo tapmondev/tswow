@@ -164,6 +164,7 @@ void TSLua::load_player_methods(sol::state& state)
     LUA_FIELD(ts_player, TSPlayer, SetArenaPoints);
     LUA_FIELD(ts_player, TSPlayer, SetHonorPoints);
     LUA_FIELD(ts_player, TSPlayer, SetLifetimeKills);
+    LUA_FIELD(ts_player, TSPlayer, SendLoot);
     LUA_FIELD(ts_player, TSPlayer, SetMoney);
     LUA_FIELD(ts_player, TSPlayer, GetMoney);
     LUA_FIELD(ts_player, TSPlayer, TryAddMoney);

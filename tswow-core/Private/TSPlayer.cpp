@@ -62,6 +62,7 @@
 #include "ObjectMgr.h"
 #include "DBCStructure.h"
 #include "LFG.h"
+#include "Loot.h"
 
 #include <memory.h>
 
@@ -1841,6 +1842,34 @@ void TSPlayer::SetLifetimeKills(uint32 val)
 {
     player->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, val);
 }
+
+/**
+ * Sends the [Player] loot, based on the gameobjects loot table
+ * enum LootType : uint8
+{
+    LOOT_NONE                   = 0,
+
+    LOOT_CORPSE                 = 1,
+    LOOT_PICKPOCKETING          = 2,
+    LOOT_FISHING                = 3,
+    LOOT_DISENCHANTING          = 4,
+                                                            // ignored always by client
+    LOOT_SKINNING               = 6,
+    LOOT_PROSPECTING            = 7,
+    LOOT_MILLING                = 8,
+
+    LOOT_FISHINGHOLE            = 20,                       // unsupported by client, sending LOOT_FISHING instead
+    LOOT_INSIGNIA               = 21,                       // unsupported by client, sending LOOT_CORPSE instead
+    LOOT_FISHING_JUNK           = 22                        // unsupported by client, sending LOOT_FISHING instead
+};
+ * @proto SendLoot(guid, loottype)
+ * @param uint64 guid: an item guid
+ * @param uint8 lootType: the loot type to send
+ */
+
+ void TSPlayer::SendLoot(TSGUID guid, uint8 lootType) {
+    player->SendLoot(guid.asGUID(), (LootType)lootType);
+ }
 
 /**
  * Sets the [Player]s amount of money to copper specified
