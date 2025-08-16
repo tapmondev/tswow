@@ -1,7 +1,7 @@
 [submodule "TrinityCore"]
 	path = cores/TrinityCore
-	url = https://github.com/tswow/TrinityCore.git
-	branch = tswow
+	url = https://github.com/tapmondev/TrinityCore.git
+	branch = wog
 [submodule "misc/adt-creator"]
 	path = misc/adt-creator
 	url = https://github.com/tswow/adt-creator.git
