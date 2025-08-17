@@ -20,7 +20,7 @@ import { wsys } from "../../../util/System";
 // linux?
 export const BLP_EXE = process.platform === 'win32'
     ? '"bin/BLPConverter/blpconverter.exe"'
-    : 'bin/BLPConverter/blpconverter.exe'
+    : 'bin/BLPConverter/blpconverter'
 
 export function generateBLP(png: FilePath) {
     wsys.exec(`${BLP_EXE} "${png}"`,'ignore')

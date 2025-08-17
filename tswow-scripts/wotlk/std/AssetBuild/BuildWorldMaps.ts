@@ -23,6 +23,11 @@ import { wsys } from "../../../util/System";
 import { generateBLP } from "./BLP";
 import { getEffectiveFile, onDirtyPNG, splitPng } from "./PNG";
 
+const ID = process.platform === 'win32'
+    ? `"${ipaths.bin.im.magick.abs()}"`
+    : 'magick identify';
+
+
 function indexFiles(dir: string, mapname: string) {
     let files: string[] = []
     for(let i=1;i<=12;++i) {
@@ -72,7 +77,7 @@ finish('worldmaps', () => {
                             return; // it's not a texture file
                         }
                         const ident = wsys.exec(
-                              ` ${ipaths.bin.im.identify.abs().get()}`
+                              ID
                             + ` ${file.abs().get()}`
                             , 'pipe'
                         )

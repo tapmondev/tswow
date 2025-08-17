@@ -66,6 +66,8 @@ void handleFile(HANDLE hMpq, std::string const& file,std::string const& outputDi
 	std::string fileLower = file;
 	std::transform(fileLower.begin(), fileLower.end(), fileLower.begin(),
 		[](unsigned char c){ return std::tolower(c); });
+	// Normalize path separators to forward slashes for comparison
+	std::replace(fileLower.begin(), fileLower.end(), '/', '\\');
 
 	if(
 		   boost::algorithm::ends_with(file,".xml")
@@ -76,7 +78,7 @@ void handleFile(HANDLE hMpq, std::string const& file,std::string const& outputDi
 		auto f = file;
 		std::replace(f.begin(),f.end(),'\\','/');
 		fs::path outfile = outputDir / fs::path(f);
-		
+
 		try {
 			fs::create_directories(outfile.parent_path());
 		} catch (const std::exception& e) {
@@ -129,6 +131,13 @@ int main(int argc, char **argv) {
 
 	// md5translate.trs hack
 	patches.push_back(fs::path(argv[2]) / "patch-3.MPQ");
+
+	patches.push_back(fs::path(argv[2]) / "patch-2.MPQ");
+
+	patches.push_back(fs::path(argv[2]) / "common-2.MPQ");
+
+		
+
 
 	HANDLE mpq = NULL;
 	if (!SFileOpenArchive(mainfile.string().c_str(), 0, STREAM_FLAG_READ_ONLY, &mpq)) {

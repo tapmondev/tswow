@@ -24,6 +24,10 @@ import { LUAXML } from "../../luaxml/LUAXML";
 import { generateBLP } from "./BLP";
 import { getEffectiveFile, onDirtyPNG, splitPng } from "./PNG";
 
+const ID = process.platform === 'win32'
+    ? `"${ipaths.bin.im.magick.abs()}"`
+    : 'magick identify';
+
 finish('minimaps', () => {
     if(!Args.hasFlag('build-blp',[process.argv])) {
         return;
@@ -48,7 +52,7 @@ finish('minimaps', () => {
                         return; // it's not a texture file
                     }
                     const ident = wsys.exec(
-                          ` ${ipaths.bin.im.identify.abs().get()}`
+                          ID
                         + ` ${file.abs().get()}`
                         , 'pipe'
                     )
