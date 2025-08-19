@@ -342,6 +342,13 @@ struct TSEvents
             , TSCreature creature
             , TSMutableNumber<float> money
          )
+
+         EVENT(OnSetTeamForBattleground
+             , TSPlayer player
+             , TSNumber<uint32> battlegroundId
+             , TSNumber<uint32> queueSize
+             , TSMutableNumber<uint32> teamId
+         )
     } Player;
 
     struct AccountEvents
@@ -378,6 +385,12 @@ struct TSEvents
          EVENT(OnRemoveMember, TSGroup, TSNumber<uint64> member_id, TSNumber<uint32>, TSNumber<uint64>, std::string const&)
          EVENT(OnChangeLeader, TSGroup, TSNumber<uint64>, TSNumber<uint64>)
          EVENT(OnDisband, TSGroup)
+         EVENT(OnSetTeamForBattleground, 
+            TSGroup group,
+            TSNumber<uint32> battlegroundId,
+            TSNumber<uint32> queueSize,
+            TSMutableNumber<uint32> teamId
+        )
     } Group;
 
     struct UnitEvents

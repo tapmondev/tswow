@@ -8240,6 +8240,14 @@ declare namespace _hidden {
             , creature: TSCreature
             , money: TSMutableNumber<float>
          ) => void);
+
+       
+        OnSetTeamForBattleground(callback: (
+              player: TSPlayer
+            , battlegroundId: TSNumber<uint32>
+            , queueSize: TSNumber<uint32>
+            , teamId: TSMutableNumber<uint32>
+        ) => void);
     }
 
     export class Account<T> {
@@ -8270,6 +8278,12 @@ declare namespace _hidden {
         OnRemoveMember(callback: (group : TSGroup,guid : uint64,method : uint32,kicker : uint64,reason : string)=>void);
         OnChangeLeader(callback: (group : TSGroup,newLeaderGuid : uint64,oldLeaderGuid : uint64)=>void);
         OnDisband(callback: (group : TSGroup)=>void);
+        OnSetTeamForBattleground(callback: (
+              player: TSGroup
+            , battlegroundId: TSNumber<uint32>
+            , queueSize: TSNumber<uint32>
+            , teamId: TSMutableNumber<uint32>
+        ) => void);
     }
 
     export class Spell<T> {
@@ -10228,6 +10242,23 @@ declare type ZoneCategory = uint32;
 declare function TS_ZONE_CATEGORY(color: uint32): ZoneCategory
 declare function TS_ZONE_SCOPED(cat: ZoneCategory): void
 declare function TS_ZONE_SCOPED_N(cat: ZoneCategory): void
+
+// SpellTeamOverride functions
+declare function AddSpellMapping(spellId: uint32, team: uint32, priority?: uint8, battlegroundTypeId?: uint32): void;
+declare function RemoveSpellMapping(spellId: uint32, battlegroundTypeId?: uint32): void;
+declare function ClearSpellMappings(battlegroundTypeId?: uint32): void;
+declare function InitializeDefaultSpellMappings(): void;
+
+declare function GetBattlegroundTeam(player: TSPlayer, battlegroundTypeId?: uint32): TSNumber<uint32>;
+declare function HasTeamOverrideSpell(player: TSPlayer, battlegroundTypeId?: uint32): boolean;
+declare function GetTeamFromSpell(spellId: uint32, battlegroundTypeId?: uint32): TSNumber<uint32>;
+declare function GetTeamOverrideType(player: TSPlayer, battlegroundTypeId?: uint32): TSNumber<uint32>;
+declare function GetHighestPriorityOverrideSpell(player: TSPlayer, battlegroundTypeId?: uint32): TSNumber<uint32>;
+declare function IsTeamOverrideSpell(spellId: uint32, battlegroundTypeId?: uint32): boolean;
+declare function GetSpellPriority(spellId: uint32, battlegroundTypeId?: uint32): TSNumber<uint8>;
+declare function GetLessPopulatedTeam(battlegroundTypeId?: uint32): TSNumber<uint32>;
+declare function ClearOverrideSpells(player: TSPlayer): void;
+declare function LogOverrideInfo(player: TSPlayer, battlegroundTypeId?: uint32): void;
 
 // Regular Expression Support
 declare class TSRegExp {
